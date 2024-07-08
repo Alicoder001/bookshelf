@@ -1,0 +1,27 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Mulish", sans-serif;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 78%;
+  height: 100%;
+  z-index: -1;
+  background-image: url("./assets/bg.svg");
+  background-repeat: no-repeat;
+  background-position: right 0;
+  background-size: cover;
+}
