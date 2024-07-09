@@ -15,6 +15,8 @@ import edit from "../assets/edit.svg";
 import ModalUnstyled from "./Modal";
 import { deleteBook, updateBook } from "../services/api";
 import MultipleSelect from "./Select";
+import { useDispatch } from "react-redux";
+import { setRefresh } from "../redux/bookslice";
 
 const BookCard: React.FC<{ bookStatus: BookStatus }> = ({ bookStatus }) => {
   const getStatusLabel = (status?: number) => {
@@ -49,6 +51,7 @@ const BookCard: React.FC<{ bookStatus: BookStatus }> = ({ bookStatus }) => {
     isOpen: false,
     message: "",
   });
+  const dispath = useDispatch();
   const [openError, setOpenError] = useState({
     isOpen: false,
     message: "",
@@ -63,22 +66,26 @@ const BookCard: React.FC<{ bookStatus: BookStatus }> = ({ bookStatus }) => {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await deleteBook(id);
-      console.log(response.data);
+      await deleteBook(id);
       setOpenSuccess({ isOpen: true, message: "Book Deleted Successfully!" });
+      setDeleteModal(false);
+      dispath(setRefresh());
     } catch (error) {
       setOpenError({ isOpen: true, message: "Book didn't delete!" });
+      setDeleteModal(false);
     }
   };
 
   const handleStatus = async (statusId: number) => {
     try {
-      const response = await updateBook({
+      await updateBook({
         statusId,
-        id: bookStatus.book.id as number,
+        id: bookStatus.book?.id as number,
       });
       setOpenSuccess({ isOpen: true, message: "Book Status Updated!" });
-      console.log(response.data);
+
+      dispath(setRefresh());
+      setEditModal(false);
     } catch (error) {
       setOpenError({ isOpen: true, message: "Book status didn't update!" });
     }
@@ -161,25 +168,25 @@ const BookCard: React.FC<{ bookStatus: BookStatus }> = ({ bookStatus }) => {
           fontFamily={'"Montserrat","Arial",sans-serif'}
           marginBottom={"6px"}
         >
-          {bookStatus.book.title || "N/A"}
+          {bookStatus.book?.title || "N/A"}
         </Typography>
         <Typography variant="body2">
           Cover:{" "}
           <a
             style={{ textDecoration: "none" }}
-            href={bookStatus.book.cover || "#"}
+            href={bookStatus.book?.cover || "#"}
           >
-            {(bookStatus.book.cover || "").slice(0, 30) + "..."}
+            {(bookStatus.book?.cover || "").slice(0, 30) + "..."}
           </a>
         </Typography>
         <Typography variant="body2">
-          Pages: {bookStatus.book.pages || "N/A"}
+          Pages: {bookStatus.book?.pages || "N/A"}
         </Typography>
         <Typography variant="body2">
-          Published: {bookStatus.book.published || "N/A"}
+          Published: {bookStatus.book?.published || "N/A"}
         </Typography>
         <Typography variant="body2" marginBottom={"20px"}>
-          ISBN: {bookStatus.book.isbn || "N/A"}
+          ISBN: {bookStatus.book?.isbn || "N/A"}
         </Typography>
         <Box
           display={"flex"}
@@ -187,13 +194,13 @@ const BookCard: React.FC<{ bookStatus: BookStatus }> = ({ bookStatus }) => {
           justifyContent={"space-between"}
         >
           <Typography variant="body2">
-            {bookStatus.book.author || "Unknown"} /{" "}
-            {bookStatus.book.published || "Unknown"}
+            {bookStatus.book?.author || "Unknown"} /{" "}
+            {bookStatus.book?.published || "Unknown"}
           </Typography>
           <Chip
-            label={getStatusLabel(bookStatus.status)}
+            label={getStatusLabel(bookStatus?.status)}
             sx={{
-              ...getChipStyle(bookStatus.status),
+              ...getChipStyle(bookStatus?.status),
               fontSize: "16px",
               lineHeight: 1,
               height: "24px !important",
@@ -219,7 +226,7 @@ const BookCard: React.FC<{ bookStatus: BookStatus }> = ({ bookStatus }) => {
                 <Box component={"b"} color={"#FF4D4F"}>
                   delete
                 </Box>{" "}
-                the book "<b>{bookStatus.book.title}</b>
+                the book "<b>{bookStatus.book?.title}</b>
                 "?
               </Typography>
               <Box
@@ -246,7 +253,7 @@ const BookCard: React.FC<{ bookStatus: BookStatus }> = ({ bookStatus }) => {
                 </Button>
                 <Button
                   onClick={() => {
-                    handleDelete(bookStatus.book.id as number);
+                    handleDelete(bookStatus.book?.id as number);
                   }}
                   fullWidth
                   variant="contained"

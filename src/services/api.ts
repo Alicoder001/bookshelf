@@ -41,7 +41,7 @@ export const registerUser = async (user: Omit<User, "id">) => {
 
 export const addBook = async (isbn: string) => {
   const response = await api.post(`/books`, { isbn });
-  console.log(response.data);
+
   return response.data;
 };
 
@@ -52,7 +52,6 @@ export const updateBook = async ({
   statusId: number;
   id: number;
 }) => {
-  console.log(statusId);
   const response = await api.patch(`/books/${id}`, { status: statusId });
   return response.data;
 };
@@ -64,7 +63,7 @@ export const deleteBook = async (id: number) => {
 
 export const getBooks = async () => {
   const response = await api.get(`/books`);
-  console.log(response.data);
+
   return response.data;
 };
 export const getUser = async () => {

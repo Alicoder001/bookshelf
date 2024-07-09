@@ -2,10 +2,12 @@
 
 import { configureStore } from "@reduxjs/toolkit";
 import bookslice from "./bookslice";
+import userSlice from "./userSlice";
 
 const store = configureStore({
   reducer: {
     book: bookslice,
+    user: userSlice,
   },
   devTools: process.env.NODE_ENV !== "production",
 });

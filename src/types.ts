@@ -21,5 +21,6 @@ export interface BookStatus {
   book: Book | Partial<Book>;
   status?: number;
 }
+export type SearchBook = Omit<Book, "id">;
 
 export type RegisterValues = Omit<User, "id">;

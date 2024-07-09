@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BookStatus } from "../types";
+import { BookStatus, SearchBook } from "../types";
 import {
   Box,
   Button,
@@ -21,9 +21,12 @@ import cancelIcon from "../assets/trash-input.svg";
 import checkIcon from "../assets/allow.svg";
 import closeIcon from "../assets/x-circle.svg"; // assuming you have a close icon
 import { addBook } from "../services/api";
+import { useDispatch } from "react-redux";
+import { setRefresh } from "../redux/bookslice";
+import SearchBookCard from "./SearchBookCard";
 
 interface BookListProps {
-  books: BookStatus[];
+  books: BookStatus[] | SearchBook[];
 }
 
 const BookList: React.FC<BookListProps> = ({ books }) => {
@@ -43,7 +46,7 @@ const BookList: React.FC<BookListProps> = ({ books }) => {
   };
 
   const initialValues = { isbn: "" };
-
+  const dispatch = useDispatch();
   return (
     <>
       <Box component={"section"}>
@@ -51,13 +54,23 @@ const BookList: React.FC<BookListProps> = ({ books }) => {
           component={"header"}
           display={"flex"}
           justifyContent={"space-between"}
-          alignItems={"start"}
           marginBottom={"36px"}
+          gap={"15px"}
+          sx={{
+            alignItems: {
+              xs: "center",
+              sm: "start",
+            },
+          }}
         >
           <Box>
             <Typography
               sx={{
-                fontSize: "36px",
+                fontSize: {
+                  md: "36px",
+                  sm: "30px",
+                  xs: "28px",
+                },
                 fontWeight: 700,
                 lineHeight: "normal",
                 color: "white",
@@ -87,9 +100,16 @@ const BookList: React.FC<BookListProps> = ({ books }) => {
             }}
             sx={{
               backgroundColor: "#6200EE",
-              padding: "10px 24px",
+              padding: {
+                sm: "10px 24px",
+                xs: "8px 15px",
+              },
               textTransform: "none!important",
-              fontSize: "16px",
+              flexShrink: 0,
+              fontSize: {
+                sm: "16px",
+                xs: "14px",
+              },
               fontWeight: 500,
               lineHeight: "normal",
               ":hover": {
@@ -109,9 +129,18 @@ const BookList: React.FC<BookListProps> = ({ books }) => {
             display={"grid"}
             gap={"24px"}
           >
-            {books.map((bookStatus, index) => (
-              <BookCard key={index} bookStatus={bookStatus as BookStatus} />
-            ))}
+            {books &&
+              books.map((book, index) => {
+                // @ts-expect-error
+                if (book.status || book.book)
+                  return (
+                    <BookCard key={index} bookStatus={book as BookStatus} />
+                  );
+                else
+                  return (
+                    <SearchBookCard key={index} book={book as SearchBook} />
+                  );
+              })}
           </Grid>
         </List>
       </Box>
@@ -150,9 +179,10 @@ const BookList: React.FC<BookListProps> = ({ books }) => {
               const errors = await validateForm(values);
               if (Object.keys(errors).length === 0) {
                 try {
-                  const response = await addBook(values.isbn);
-                  console.log(response.data);
+                  await addBook(values.isbn);
+
                   setOpenSuccess(true);
+                  dispatch(setRefresh());
                 } catch (error) {
                   console.error("Error registering user:", error);
                   setOpenError(true);

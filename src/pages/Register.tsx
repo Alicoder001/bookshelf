@@ -7,6 +7,7 @@ import {
   InputAdornment,
   TextField,
   Button,
+  Box,
 } from "@mui/material";
 import { Formik, Form, Field, FieldProps } from "formik";
 import * as Yup from "yup";
@@ -48,16 +49,20 @@ const Register: React.FC = () => {
         height: "100vh",
       }}
     >
-      <div
+      <Box
+        component={"div"}
         className="form-container"
-        style={{
+        sx={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           padding: "2rem",
           boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.16)",
           borderRadius: "8px",
-          maxWidth: "430px",
+          maxWidth: {
+            xs: "350px",
+            sm: "430px",
+          },
           width: "100%",
           backgroundColor: "white",
         }}
@@ -302,7 +307,7 @@ const Register: React.FC = () => {
             Error registering user!
           </Alert>
         </Snackbar>
-      </div>
+      </Box>
     </div>
   );
 };

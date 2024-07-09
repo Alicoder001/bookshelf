@@ -1,15 +1,15 @@
 import React, { useEffect } from "react";
-import { getBooks } from "../services/api";
+import { getBooks, getUser } from "../services/api";
 import BookList from "../components/BookList";
 import { Box, Container } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { setBook } from "../redux/bookslice";
 import { RootState } from "../redux/store";
+import { setUser } from "../redux/userSlice";
 
 const Home: React.FC = () => {
   const dispatch = useDispatch();
-  const { books } = useSelector((state: RootState) => state.book);
-
+  const { books, refresh } = useSelector((state: RootState) => state.book);
   useEffect(() => {
     const fetchBooks = async () => {
       try {
@@ -21,9 +21,18 @@ const Home: React.FC = () => {
         console.error("Error fetching books:", error);
       }
     };
-
     fetchBooks();
-  }, [dispatch]);
+    const fetchUser = async () => {
+      try {
+        await getUser();
+
+        dispatch(setUser(user.data));
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    };
+    fetchUser();
+  }, [refresh, dispatch]);
 
   return (
     <Box>

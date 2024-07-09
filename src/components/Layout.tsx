@@ -6,7 +6,7 @@ const Layout: React.FC = () => {
   return (
     <>
       <Header />
-      <main style={{ padding: "20px" }}>
+      <main>
         <Outlet />
       </main>
     </>

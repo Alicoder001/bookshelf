@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { useState } from "react";
 import {
   AppBar,
   Typography,
@@ -13,30 +13,40 @@ import { HighlightOff } from "@mui/icons-material";
 import logo from "../assets/logo.svg";
 import search from "../assets/search.svg";
 import searchLight from "../assets/search-light.svg";
-
 import bell from "../assets/bell.svg";
 import { deepPurple } from "@mui/material/colors";
-import { searchBook } from "../services/api";
-// import { useDispatch } from "react-redux";
+import { getBooks, searchBook } from "../services/api";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import { setBook, setSearchLoading } from "../redux/bookslice";
 
 const Header: React.FC = () => {
   const [inputValue, setInputValue] = useState("");
-  // const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user);
 
-  const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
+  const dispatch = useDispatch();
+
+  const handleSubmit = async () => {
     try {
-      const books = await searchBook(event.target.value);
-      console.log(books);
-      // dispatch(setBook(books.data));
+      dispatch(setSearchLoading(true));
+      let books;
+      if (inputValue) {
+        books = await searchBook(inputValue);
+      } else {
+        books = await getBooks();
+      }
+
+      dispatch(setBook(books.data));
+      dispatch(setSearchLoading(false));
     } catch (error) {
-      console.log(error);
+      dispatch(setSearchLoading(false));
     }
   };
 
   const handleClear = () => {
     setInputValue("");
   };
+
   return (
     <AppBar
       position="static"
@@ -86,80 +96,98 @@ const Header: React.FC = () => {
               </Box>
             </Typography>
           </Box>
-          <TextField
-            placeholder="Search for any training you want"
-            value={inputValue}
-            onChange={handleChange}
+          <Box
+            component={"form"}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
             sx={{
               maxWidth: "380px",
               width: "100%",
-              backgroundColor: "transparent",
-              borderRadius: "6px",
-              fontSize: "16px",
-              color: "white",
-              lineHeight: "normal",
-
-              "::placeholder": {
+            }}
+          >
+            <TextField
+              fullWidth
+              placeholder="Search for any training you want"
+              value={inputValue}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+              }}
+              sx={{
+                display: {
+                  xs: "none",
+                  sm: "inherit",
+                },
+                width: "100%",
+                backgroundColor: "transparent",
+                borderRadius: "6px",
+                fontSize: "16px",
                 color: "white",
-              },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  border: "none",
-                },
-                "&:hover fieldset": {
-                  border: "none",
-                },
-                "&.Mui-focused fieldset": {
-                  border: "none",
-                  "&.search-black": {
-                    display: "block",
-                  },
-                },
-                "&.Mui-focused": {
-                  backgroundColor: "white",
-                  color: "black",
-                },
-                "& .MuiInputBase-input::placeholder": {
+                lineHeight: "normal",
+
+                "::placeholder": {
                   color: "white",
                 },
-                "&.Mui-focused .MuiInputBase-input::placeholder": {
-                  color: "black",
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    border: "none",
+                  },
+                  "&:hover fieldset": {
+                    border: "none",
+                  },
+                  "&.Mui-focused fieldset": {
+                    border: "none",
+                    "&.search-black": {
+                      display: "block",
+                    },
+                  },
+                  "&.Mui-focused": {
+                    backgroundColor: "white",
+                    color: "black",
+                  },
+                  "& .MuiInputBase-input::placeholder": {
+                    color: "white",
+                  },
+                  "&.Mui-focused .MuiInputBase-input::placeholder": {
+                    color: "black",
+                  },
+                  "&.Mui-focused .search-black": {
+                    display: "block!important",
+                  },
+                  "&.Mui-focused .search-light": {
+                    display: "none",
+                  },
                 },
-                "&.Mui-focused .search-black": {
-                  display: "block!important",
-                },
-                "&.Mui-focused .search-light": {
-                  display: "none",
-                },
-              },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <img
-                    className="search-black"
-                    style={{
-                      display: "none",
-                    }}
-                    src={search}
-                    alt="search"
-                  />
-                  <img
-                    className="search-light"
-                    src={searchLight}
-                    alt="search-light"
-                  />
-                </InputAdornment>
-              ),
-              endAdornment: inputValue ? (
-                <InputAdornment position="end">
-                  <IconButton onClick={handleClear}>
-                    <HighlightOff />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
-            }}
-          />
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <img
+                      className="search-black"
+                      style={{
+                        display: "none",
+                      }}
+                      src={search}
+                      alt="search"
+                    />
+                    <img
+                      className="search-light"
+                      src={searchLight}
+                      alt="search-light"
+                    />
+                  </InputAdornment>
+                ),
+                endAdornment: inputValue ? (
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleClear}>
+                      <HighlightOff />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
+          </Box>
         </Box>
         <Box display={"flex"} gap={"22px"} alignItems={"center"}>
           <img src={bell} alt="" />
@@ -175,7 +203,10 @@ const Header: React.FC = () => {
               },
             }}
           >
-            OP
+            {user?.user
+              ? // @ts-expect-error
+                (user.user.name as string)?.slice(0, 1).toUpperCase()
+              : ""}
           </Avatar>
         </Box>
       </Container>
