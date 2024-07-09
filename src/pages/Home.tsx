@@ -24,7 +24,7 @@ const Home: React.FC = () => {
     fetchBooks();
     const fetchUser = async () => {
       try {
-        await getUser();
+        const user = await getUser();
 
         dispatch(setUser(user.data));
       } catch (error) {
