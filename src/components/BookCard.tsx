@@ -115,7 +115,7 @@ const BookCard: React.FC<{ bookStatus: BookStatus }> = ({ bookStatus }) => {
             top: "16px",
             right: {
               xs: 0,
-              sm: "32px",
+              sm: "-32px",
             },
             display: "none",
             flexDirection: "column",
