@@ -4,6 +4,11 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { addBook } from "../services/api";
 
+interface FormValues {
+  title: string;
+  author: string;
+}
+
 const AddBook: React.FC = () => {
   return (
     <Container>
@@ -14,8 +19,9 @@ const AddBook: React.FC = () => {
           title: Yup.string().required("Required"),
           author: Yup.string().required("Required"),
         })}
-        onSubmit={async (values, { setSubmitting }) => {
+        onSubmit={async (values: FormValues, { setSubmitting }) => {
           try {
+            // @ts-expect-error
             await addBook(values);
             alert("Book added successfully");
           } catch (error) {

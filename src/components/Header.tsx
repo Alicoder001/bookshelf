@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import {
   AppBar,
   Typography,
@@ -16,18 +16,18 @@ import searchLight from "../assets/search-light.svg";
 
 import bell from "../assets/bell.svg";
 import { deepPurple } from "@mui/material/colors";
-import { getBooks, searchBook } from "../services/api";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@reduxjs/toolkit/query";
-import { setBook } from "../redux/bookslice";
+import { searchBook } from "../services/api";
+// import { useDispatch } from "react-redux";
+
 const Header: React.FC = () => {
   const [inputValue, setInputValue] = useState("");
-  const dispatch = useDispatch();
-  const { books } = useSelector((state: RootState) => state.book);
-  const handleChange = async (event) => {
+  // const dispatch = useDispatch();
+
+  const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
     try {
       const books = await searchBook(event.target.value);
+      console.log(books);
       // dispatch(setBook(books.data));
     } catch (error) {
       console.log(error);
