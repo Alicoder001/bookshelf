@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import AddBook from "./pages/AddBook";
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import NotFound from "./components/NotFound";
 
 const App: React.FC = () => {
   return (
@@ -16,6 +17,7 @@ const App: React.FC = () => {
           </Route>
         </Route>
         <Route path="/register" element={<Register />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
