@@ -16,11 +16,22 @@ import searchLight from "../assets/search-light.svg";
 
 import bell from "../assets/bell.svg";
 import { deepPurple } from "@mui/material/colors";
+import { getBooks, searchBook } from "../services/api";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@reduxjs/toolkit/query";
+import { setBook } from "../redux/bookslice";
 const Header: React.FC = () => {
   const [inputValue, setInputValue] = useState("");
-
-  const handleChange = (event) => {
+  const dispatch = useDispatch();
+  const { books } = useSelector((state: RootState) => state.book);
+  const handleChange = async (event) => {
     setInputValue(event.target.value);
+    try {
+      const books = await searchBook(event.target.value);
+      // dispatch(setBook(books.data));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleClear = () => {

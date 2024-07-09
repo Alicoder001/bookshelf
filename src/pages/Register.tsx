@@ -1,93 +1,65 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Snackbar,
+  Alert,
+  Typography,
+  FormControl,
+  InputAdornment,
   TextField,
   Button,
-  Container,
-  Box,
-  Typography,
-  InputAdornment,
-  CircularProgress,
-  FormControl,
 } from "@mui/material";
 import { Formik, Form, Field, FieldProps } from "formik";
 import * as Yup from "yup";
+import { v4 as uuidv4 } from "uuid";
 import { registerUser } from "../services/api";
 import { RegisterValues } from "../types";
-import {
-  Person,
-  Email,
-  Lock,
-  CheckCircle,
-  ErrorOutline,
-} from "@mui/icons-material";
+import cancelIcon from "../assets/trash-input.svg";
+import checkIcon from "../assets/allow.svg";
+import { useNavigate } from "react-router-dom";
 
 const Register: React.FC = () => {
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const initialValues: RegisterValues = {
-    username: "",
-    email: "",
-    password: "",
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [openError, setOpenError] = useState(false);
+  const navigate = useNavigate();
+  const handleCloseSuccess = () => {
+    setOpenSuccess(false);
   };
 
-  const textFieldSx = (error: boolean, loading: boolean, success: boolean) => ({
-    "& .MuiOutlinedInput-root": {
-      "& fieldset": {
-        borderColor: error
-          ? "#D32F2F"
-          : success
-          ? "#4CAF50"
-          : loading
-          ? "#6200EE"
-          : "#BDBDBD",
-      },
-      "&:hover fieldset": {
-        borderColor: error
-          ? "#D32F2F"
-          : success
-          ? "#4CAF50"
-          : loading
-          ? "#6200EE"
-          : "#757575",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: error
-          ? "#D32F2F"
-          : success
-          ? "#4CAF50"
-          : loading
-          ? "#6200EE"
-          : "#6200EE",
-      },
-    },
-  });
+  const handleCloseError = () => {
+    setOpenError(false);
+  };
 
-  const labelSx = (error: boolean, success: boolean) => ({
-    color: error ? "#D32F2F" : success ? "#4CAF50" : "inherit",
+  const initialValues: RegisterValues = {
+    name: "",
+    email: "",
+  };
+  useEffect(() => {
+    const key = localStorage.getItem("key");
+    if (key) {
+      navigate("/");
+    }
   });
-
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      height="100vh"
-      sx={{ padding: 2 }}
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
     >
-      <Container
-        sx={{
+      <div
+        className="form-container"
+        style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          padding: 4,
-          boxShadow: 3,
-          borderRadius: 2,
-          maxWidth: 430,
+          padding: "2rem",
+          boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.16)",
+          borderRadius: "8px",
+          maxWidth: "430px",
           width: "100%",
           backgroundColor: "white",
-          "@media (min-width: 1200px)": {
-            width: 430,
-          },
         }}
       >
         <Typography variant="h5" component="h1" gutterBottom>
@@ -96,77 +68,129 @@ const Register: React.FC = () => {
         <Formik
           initialValues={initialValues}
           validationSchema={Yup.object({
-            username: Yup.string().required("Required"),
+            name: Yup.string().required("Required"),
             email: Yup.string()
               .email("Invalid email address")
               .required("Required"),
-            password: Yup.string().required("Required"),
           })}
-          onSubmit={async (values, { setSubmitting }) => {
-            setSubmitError(null);
-            try {
-              await registerUser(values);
-              alert("Foydalanuvchi muvaffaqiyatli ro'yxatdan o'tdi");
-            } catch (error) {
-              setSubmitError(
-                "Foydalanuvchini ro'yxatdan o'tkazishda xatolik yuz berdi"
-              );
-              console.error("Ro'yxatdan o'tkazishda xatolik:", error);
+          onSubmit={async (values, { setSubmitting, validateForm }) => {
+            const errors = await validateForm(values);
+            if (Object.keys(errors).length === 0) {
+              const submissionData = {
+                ...values,
+                key: uuidv4(),
+                secret: "MySecret",
+              };
+              try {
+                await registerUser(submissionData);
+                setOpenSuccess(true);
+                navigate("/");
+              } catch (error) {
+                console.error("Error registering user:", error);
+                setOpenError(true);
+              }
             }
             setSubmitting(false);
           }}
         >
-          {({ isSubmitting, isValid }) => (
+          {({ errors, touched }) => (
             <Form style={{ width: "100%" }}>
-              <Field name="username">
-                {({ field, meta }: FieldProps) => (
-                  <FormControl fullWidth margin="normal">
+              <Field name="name">
+                {({ field }: FieldProps) => (
+                  <FormControl fullWidth margin="dense">
                     <Typography
                       variant="caption"
-                      sx={labelSx(!!meta.error, meta.touched && !meta.error)}
+                      className="input-label"
+                      sx={{
+                        fontSize: "14px",
+                        fontFamily: "Mulish, sans-serif",
+                        color: touched.name
+                          ? errors.name
+                            ? "red"
+                            : "green"
+                          : "inherit",
+                        marginBottom: "2px",
+                      }}
                     >
-                      Username
+                      Name
                     </Typography>
                     <TextField
                       {...field}
-                      placeholder="Enter your username"
+                      placeholder="Enter your name"
                       fullWidth
+                      error={touched.name && !!errors.name}
+                      sx={{
+                        margin: "2px 0",
+                        "& .MuiOutlinedInput-root": {
+                          color: "#151515",
+                          fontSize: "16px",
+                          lineHeight: 1.2,
+                          fontFamily: "Mulish, Arial, sans-serif",
+                          letterSpacing: "0.5px",
+                          fontWeight: 500,
+                          "& fieldset": {
+                            borderColor: touched.name
+                              ? errors.name
+                                ? "red"
+                                : "green"
+                              : "#EBEBEB",
+                            boxShadow:
+                              "0px 4px 18px 0px rgba(51, 51, 51, 0.04)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: touched.name
+                              ? errors.name
+                                ? "red"
+                                : "green"
+                              : "#EBEBEB",
+                            boxShadow:
+                              "0px 4px 18px 0px rgba(51, 51, 51, 0.08)",
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: touched.name
+                              ? errors.name
+                                ? "red"
+                                : "green"
+                              : "#6200EE",
+                          },
+                        },
+                        "& .MuiInputBase-input::placeholder": {
+                          color: "rgba(0, 0, 0, 0.54)",
+                        },
+                      }}
+                      InputLabelProps={{ shrink: true }}
                       InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Person />
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {touched.name &&
+                              (errors.name ? (
+                                <img src={cancelIcon} alt="cancel" />
+                              ) : (
+                                <img src={checkIcon} alt="check" />
+                              ))}
                           </InputAdornment>
                         ),
-                        endAdornment: isSubmitting ? (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        ) : meta.touched && !!meta.error ? (
-                          <InputAdornment position="end">
-                            <ErrorOutline color="error" />
-                          </InputAdornment>
-                        ) : meta.touched && !meta.error ? (
-                          <InputAdornment position="end">
-                            <CheckCircle color="success" />
-                          </InputAdornment>
-                        ) : null,
                       }}
-                      error={meta.touched && !!meta.error}
-                      sx={textFieldSx(
-                        !!meta.error,
-                        isSubmitting,
-                        meta.touched && !meta.error
-                      )}
                     />
                   </FormControl>
                 )}
               </Field>
               <Field name="email">
-                {({ field, meta }: FieldProps) => (
-                  <FormControl fullWidth margin="normal">
+                {({ field }: FieldProps) => (
+                  <FormControl fullWidth margin="dense">
                     <Typography
                       variant="caption"
-                      sx={labelSx(!!meta.error, meta.touched && !meta.error)}
+                      className="input-label"
+                      sx={{
+                        fontSize: "14px",
+                        fontFamily: "Mulish, sans-serif",
+                        color: touched.email
+                          ? errors.email
+                            ? "red"
+                            : "green"
+                          : "inherit",
+                        marginBottom: "2px",
+                      }}
                     >
                       Email
                     </Typography>
@@ -175,109 +199,111 @@ const Register: React.FC = () => {
                       type="email"
                       placeholder="Enter your email"
                       fullWidth
+                      error={touched.email && !!errors.email}
+                      sx={{
+                        margin: "2px 0",
+                        "& .MuiOutlinedInput-root": {
+                          color: "#151515",
+                          fontSize: "16px",
+                          lineHeight: 1.2,
+                          fontFamily: "Mulish, Arial, sans-serif",
+                          letterSpacing: "0.5px",
+                          fontWeight: 500,
+                          "& fieldset": {
+                            borderColor: touched.email
+                              ? errors.email
+                                ? "red"
+                                : "green"
+                              : "#EBEBEB",
+                            boxShadow:
+                              "0px 4px 18px 0px rgba(51, 51, 51, 0.04)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: touched.email
+                              ? errors.email
+                                ? "red"
+                                : "green"
+                              : "#EBEBEB",
+                            boxShadow:
+                              "0px 4px 18px 0px rgba(51, 51, 51, 0.08)",
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: touched.email
+                              ? errors.email
+                                ? "red"
+                                : "green"
+                              : "#6200EE",
+                          },
+                        },
+                        "& .MuiInputBase-input::placeholder": {
+                          color: "rgba(0, 0, 0, 0.54)",
+                        },
+                      }}
+                      InputLabelProps={{ shrink: true }}
                       InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Email />
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {touched.email &&
+                              (errors.email ? (
+                                <img src={cancelIcon} alt="cancel" />
+                              ) : (
+                                <img src={checkIcon} alt="check" />
+                              ))}
                           </InputAdornment>
                         ),
-                        endAdornment: isSubmitting ? (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        ) : meta.touched && !!meta.error ? (
-                          <InputAdornment position="end">
-                            <ErrorOutline color="error" />
-                          </InputAdornment>
-                        ) : meta.touched && !meta.error ? (
-                          <InputAdornment position="end">
-                            <CheckCircle color="success" />
-                          </InputAdornment>
-                        ) : null,
                       }}
-                      error={meta.touched && !!meta.error}
-                      sx={textFieldSx(
-                        !!meta.error,
-                        isSubmitting,
-                        meta.touched && !meta.error
-                      )}
                     />
                   </FormControl>
                 )}
               </Field>
-              <Field name="password">
-                {({ field, meta }: FieldProps) => (
-                  <FormControl fullWidth margin="normal">
-                    <Typography
-                      variant="caption"
-                      sx={labelSx(!!meta.error, meta.touched && !meta.error)}
-                    >
-                      Password
-                    </Typography>
-                    <TextField
-                      {...field}
-                      type="password"
-                      placeholder="Enter your password"
-                      fullWidth
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Lock />
-                          </InputAdornment>
-                        ),
-                        endAdornment: isSubmitting ? (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        ) : meta.touched && !!meta.error ? (
-                          <InputAdornment position="end">
-                            <ErrorOutline color="error" />
-                          </InputAdornment>
-                        ) : meta.touched && !meta.error ? (
-                          <InputAdornment position="end">
-                            <CheckCircle color="success" />
-                          </InputAdornment>
-                        ) : null,
-                      }}
-                      error={meta.touched && !!meta.error}
-                      sx={textFieldSx(
-                        !!meta.error,
-                        isSubmitting,
-                        meta.touched && !meta.error
-                      )}
-                    />
-                  </FormControl>
-                )}
-              </Field>
-              {submitError && (
-                <Typography variant="body2" color="error" align="center">
-                  {submitError}
-                </Typography>
-              )}
+
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 fullWidth
                 sx={{
-                  mt: 2,
-                  backgroundColor: "#6200EE",
-                  ":hover": {
-                    backgroundColor: "#8133F1",
-                  },
-                  ":disabled": {
-                    backgroundColor: "grey",
+                  marginTop: "36px",
+                  backgroundColor: "#6200ee",
+                  "&:hover": {
+                    backgroundColor: "#8133f1",
                   },
                 }}
-                disabled={isSubmitting || !isValid}
               >
                 Submit
               </Button>
             </Form>
           )}
         </Formik>
-      </Container>
-    </Box>
+
+        <Snackbar
+          open={openSuccess}
+          autoHideDuration={6000}
+          onClose={handleCloseSuccess}
+        >
+          <Alert
+            onClose={handleCloseSuccess}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
+            User registered successfully!
+          </Alert>
+        </Snackbar>
+        <Snackbar
+          open={openError}
+          autoHideDuration={6000}
+          onClose={handleCloseError}
+        >
+          <Alert
+            onClose={handleCloseError}
+            severity="error"
+            sx={{ width: "100%" }}
+          >
+            Error registering user!
+          </Alert>
+        </Snackbar>
+      </div>
+    </div>
   );
 };
 

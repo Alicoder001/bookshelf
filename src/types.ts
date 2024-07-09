@@ -1,22 +1,25 @@
 export interface User {
   id: number;
-  username: string;
+  name: string;
   email: string;
-  password: string;
+  key?: string;
+  secret?: string;
 }
 
+// types.ts
 export interface Book {
   id: number;
-  isbn: string;
   title: string;
-  cover: string;
   author: string;
-  published: number;
+  cover: string;
+  isbn: string;
   pages: number;
+  published: number;
 }
+
 export interface BookStatus {
-  book: Book;
-  status: 0 | 1 | 2;
+  book: Book | Partial<Book>;
+  status?: number;
 }
 
 export type RegisterValues = Omit<User, "id">;
