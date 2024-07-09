@@ -113,7 +113,10 @@ const BookCard: React.FC<{ bookStatus: BookStatus }> = ({ bookStatus }) => {
           sx={{
             position: "absolute",
             top: "16px",
-            right: "-33px",
+            right: {
+              xs: 0,
+              sm: "32px",
+            },
             display: "none",
             flexDirection: "column",
             gap: "2px",
